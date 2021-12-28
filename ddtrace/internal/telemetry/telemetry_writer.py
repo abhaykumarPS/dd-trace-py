@@ -14,7 +14,6 @@ from ..compat import httplib
 from ..encoding import JSONEncoderV2
 from ..logger import get_logger
 from ..periodic import PeriodicService
-from .data import create_integration
 from .telemetry_request import TelemetryRequest
 from .telemetry_request import app_closed_telemetry_request
 from .telemetry_request import app_integrations_changed_telemetry_request
@@ -150,7 +149,15 @@ class TelemetryWriter(PeriodicService):
         with cls._lock:
             if cls._instance is None:
                 return
-            integration = create_integration(integration_name)
+
+            integration = {
+                "name": integration_name,
+                "version": "",
+                "enabled": True,
+                "auto_enabled": True,
+                "compatible": "",
+                "error": "",
+            }
             cls._instance._integrations_queue.append(integration)
 
     @classmethod

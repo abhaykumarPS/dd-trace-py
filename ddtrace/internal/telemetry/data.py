@@ -10,19 +10,6 @@ from ...version import get_version
 from ..hostname import get_hostname
 
 
-def create_integration(name, version="", enabled=True, auto_enabled=True, compatible="", error=""):
-    # type: (str, str, bool, bool, str, str) -> Dict
-    """Creates an Integration Dict and sets default values"""
-    return {
-        "name": name,
-        "version": version,
-        "enabled": enabled,
-        "auto_enabled": auto_enabled,
-        "compatible": compatible,
-        "error": error,
-    }
-
-
 def _format_version_info(vi):
     # type: (sys._version_info) -> str
     """

@@ -1,4 +1,3 @@
-from ddtrace.internal.telemetry.data import create_integration
 from ddtrace.internal.telemetry.telemetry_request import app_started_telemetry_request
 from ddtrace.internal.telemetry.telemetry_writer import DEFAULT_TELEMETRY_ENDPOINT_TEST
 from ddtrace.internal.telemetry.telemetry_writer import TelemetryWriter
@@ -45,7 +44,14 @@ def test_telemetry_writer_integration_changed():
     telemetry_writer = TelemetryWriter._instance
     telemetry_writer.flush_events_queue()
 
-    integration = create_integration("integration-1")
+    integration = {
+        "name": "integration-name",
+        "version": "",
+        "enabled": True,
+        "auto_enabled": True,
+        "compatible": "",
+        "error": "",
+    }
     TelemetryWriter.integration_event(integration)
     assert len(telemetry_writer.queued_integrations()) == 1
 

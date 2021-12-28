@@ -11,38 +11,8 @@ from ddtrace.internal.telemetry.data import HOST
 from ddtrace.internal.telemetry.data import _format_version_info
 from ddtrace.internal.telemetry.data import _get_container_id
 from ddtrace.internal.telemetry.data import _get_os_version
-from ddtrace.internal.telemetry.data import create_integration
 from ddtrace.internal.telemetry.data import get_hostname
 from ddtrace.internal.telemetry.data import get_version
-
-
-def test_create_integration():
-    """tests create_integration and validates return type"""
-    integration = create_integration("integration_name", "0.0.0", False, False, "no", "error")
-
-    assert integration == {
-        "name": "integration_name",
-        "version": "0.0.0",
-        "enabled": False,
-        "auto_enabled": False,
-        "compatible": "no",
-        "error": "error",
-    }
-
-
-def test_create_integration_with_default_args():
-    """validates the return value of create_integration when default arguments are used"""
-    name = "integration_name"
-    integration = create_integration(name)
-
-    assert integration == {
-        "name": name,
-        "version": "",
-        "enabled": True,
-        "auto_enabled": True,
-        "compatible": "",
-        "error": "",
-    }
 
 
 def test_application():

@@ -2,7 +2,6 @@ import mock
 
 from ddtrace.internal.telemetry.data import APPLICATION
 from ddtrace.internal.telemetry.data import HOST
-from ddtrace.internal.telemetry.data import create_integration
 from ddtrace.internal.telemetry.telemetry_request import _create_telemetry_request
 from ddtrace.internal.telemetry.telemetry_request import app_closed_telemetry_request
 from ddtrace.internal.telemetry.telemetry_request import app_integrations_changed_telemetry_request
@@ -54,7 +53,17 @@ def test_app_closed_telemetry_request():
 def test_app_integrations_changed_telemetry_request():
     """validates the return value of _create_telemetry_request"""
 
-    integrations = [create_integration("integration-name")]
+    integrations = [
+        {
+            "name": "integration-name",
+            "version": "",
+            "enabled": True,
+            "auto_enabled": True,
+            "compatible": "",
+            "error": "",
+        }
+    ]
+
     with mock.patch("time.time") as t:
         t.return_value = 888366600
         with mock.patch("ddtrace.internal.telemetry.telemetry_request.get_runtime_id") as get_rt_id:
