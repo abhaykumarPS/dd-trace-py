@@ -8,9 +8,6 @@ from ...compat import monotonic
 from ..runtime import get_runtime_id
 from .data import APPLICATION
 from .data import HOST
-from .payloads import create_app_closed_payload
-from .payloads import create_app_started_payload
-from .payloads import create_integrations_changed_payload
 
 
 # Contains all the body fields required by v1 of the Telemetry Intake API
@@ -77,7 +74,12 @@ def app_started_telemetry_request():
     """
     Returns a TelemetryRequest which contains a list of application dependencies and configurations
     """
-    payload = create_app_started_payload()
+    import pkg_resources
+
+    payload = {
+        "dependencies": [{"name": pkg.project_name, "version": pkg.version} for pkg in pkg_resources.working_set],
+        "configurations": {},
+    }
     return _create_telemetry_request(payload, "app-started", 0)
 
 
@@ -88,7 +90,7 @@ def app_closed_telemetry_request(seq_id=None):
 
     :param seq_id int: arg is a counter representing the number of requests sent by the writer
     """
-    payload = create_app_closed_payload()
+    payload = {}
     return _create_telemetry_request(payload, "app-closed", seq_id)
 
 
@@ -99,5 +101,7 @@ def app_integrations_changed_telemetry_request(integrations, seq_id=None):
 
     :param seq_id int: arg is a counter representing the number of requests sent by the writer
     """
-    payload = create_integrations_changed_payload(integrations)
+    payload = {
+        "integrations": integrations,
+    }
     return _create_telemetry_request(payload, "app-integrations-changed", seq_id)

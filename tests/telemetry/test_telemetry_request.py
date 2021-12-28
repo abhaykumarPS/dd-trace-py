@@ -3,7 +3,6 @@ import mock
 from ddtrace.internal.telemetry.data import APPLICATION
 from ddtrace.internal.telemetry.data import HOST
 from ddtrace.internal.telemetry.data import create_integration
-from ddtrace.internal.telemetry.payloads import create_app_closed_payload
 from ddtrace.internal.telemetry.telemetry_request import _create_telemetry_request
 from ddtrace.internal.telemetry.telemetry_request import app_closed_telemetry_request
 from ddtrace.internal.telemetry.telemetry_request import app_integrations_changed_telemetry_request
@@ -17,9 +16,7 @@ def test_create_telemetry_request():
         with mock.patch("ddtrace.internal.telemetry.telemetry_request.get_runtime_id") as get_rt_id:
             get_rt_id.return_value = "1234-567"
 
-            telmetry_request = _create_telemetry_request(
-                payload=create_app_closed_payload(), payload_type="app-closed", seq_id=1
-            )
+            telmetry_request = _create_telemetry_request(payload={}, payload_type="app-closed", seq_id=1)
             assert telmetry_request == {
                 "headers": {
                     "Content-type": "application/json",
@@ -33,7 +30,7 @@ def test_create_telemetry_request():
                     "seq_id": 1,
                     "application": APPLICATION,
                     "host": HOST,
-                    "payload": create_app_closed_payload(),
+                    "payload": {},
                     "request_type": "app-closed",
                 },
             }
@@ -51,7 +48,7 @@ def test_app_closed_telemetry_request():
             assert telmetry_request["headers"]["DD-Telemetry-Request-Type"] == "app-closed"
             assert telmetry_request["body"]["request_type"] == "app-closed"
             assert telmetry_request["body"]["seq_id"] == 2
-            assert telmetry_request["body"]["payload"] == create_app_closed_payload()
+            assert telmetry_request["body"]["payload"] == {}
 
 
 def test_app_integrations_changed_telemetry_request():

@@ -10,15 +10,6 @@ from ...version import get_version
 from ..hostname import get_hostname
 
 
-def create_dependency(name, version):
-    # type: (str, str) -> Dict[str, str]
-    """Stores the name and versions of python modules"""
-    return {
-        "name": name,
-        "version": version,
-    }
-
-
 def create_integration(name, version="", enabled=True, auto_enabled=True, compatible="", error=""):
     # type: (str, str, bool, bool, str, str) -> Dict
     """Creates an Integration Dict and sets default values"""
@@ -59,48 +50,32 @@ def _get_os_version():
     Helper function private to this module
     Returns the os version for applications running on Unix, Mac or Windows 32-bit
     """
-    ver, _, _ = platform.mac_ver()
-    if ver:
-        return ver
-    _, ver, _, _ = platform.win32_ver()
-    if ver:
-        return ver
+    mver, _, _ = platform.mac_ver()
+    _, wver, _, _ = platform.win32_ver()
+    _, lver = platform.libc_ver()
 
-    _, ver = platform.libc_ver()
-    if ver:
-        return ver
-
-    return ""
+    return "" or mver or wver or lver
 
 
-def _get_host():
-    # type: () -> Dict[str, str]
-    """Creates a dictionary to store host data using the platform module"""
-    return {
-        "os": platform.platform(aliased=True, terse=True),
-        "hostname": get_hostname(),
-        "os_version": _get_os_version(),
-        "kernel_name": platform.system(),
-        "kernel_release": platform.release(),
-        "kernel_version": platform.version(),
-        "container_id": _get_container_id(),
-    }
+# A dictionary to store application data using ddtrace configurations and the System-Specific module
+APPLICATION = {
+    "service_name": config.service or "unnamed_python_service",
+    "service_version": config.version or "",
+    "env": config.env or "",
+    "language_name": "python",
+    "language_version": _format_version_info(sys.version_info),
+    "tracer_version": get_version(),
+    "runtime_name": platform.python_implementation(),
+    "runtime_version": _format_version_info(sys.implementation.version) if PY3 else "",
+}
 
-
-def _get_application():
-    # type: () -> Dict[str, str]
-    """Creates a dictionary to store application data using ddtrace configurations and the System-Specific module"""
-    return {
-        "service_name": config.service or "unnamed_python_service",
-        "service_version": config.version or "",
-        "env": config.env or "",
-        "language_name": "python",
-        "language_version": _format_version_info(sys.version_info),
-        "tracer_version": get_version(),
-        "runtime_name": platform.python_implementation(),
-        "runtime_version": _format_version_info(sys.implementation.version) if PY3 else "",
-    }
-
-
-APPLICATION = _get_application()
-HOST = _get_host()
+# A dictionary to store host data using the platform module
+HOST = {
+    "os": platform.platform(aliased=True, terse=True),
+    "hostname": get_hostname(),
+    "os_version": _get_os_version(),
+    "kernel_name": platform.system(),
+    "kernel_release": platform.release(),
+    "kernel_version": platform.version(),
+    "container_id": _get_container_id(),
+}
