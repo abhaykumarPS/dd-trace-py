@@ -38,10 +38,10 @@ class TelemetryWriter(PeriodicService):
     Periodic service which sends TelemetryRequest payloads to the agent-proxy [not yet but soon]
     """
 
-    enabled = False
+    enabled = False  # type: ClassVar[bool]
     _instance = None  # type: ClassVar[Optional[TelemetryWriter]]
-    _lock = forksafe.Lock()
-    sequence = 0  # type: int
+    _lock = forksafe.Lock()  # type: ClassVar[forksafe.ResetObject]
+    sequence = 0  # type: ClassVar[int]
 
     def __init__(self, endpoint):
         # type: (str) -> None
