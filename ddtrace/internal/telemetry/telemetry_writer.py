@@ -136,7 +136,7 @@ class TelemetryWriter(PeriodicService):
     def integration_event(cls, integration_name):
         # type: (str) -> None
         """
-        Creates and queues a the name and configurations of a patched module
+        Creates and queues the names and settings of a patched module
 
         :param str integration_name: name of patched module
         """
@@ -145,6 +145,15 @@ class TelemetryWriter(PeriodicService):
                 return
             integration = create_integration(integration_name)
             cls._instance._integrations_queue.append(integration)
+
+    @classmethod
+    def app_started_event(cls):
+        # type: () -> None
+        """
+        Sent when TelemetryWriter is enabled or forks
+        """
+        request = app_started_telemetry_request()
+        cls.add_request(request)
 
     @classmethod
     def _restart(cls):
@@ -180,5 +189,4 @@ class TelemetryWriter(PeriodicService):
             cls._instance = telemetry_writer
             cls.enabled = True
 
-        request = app_started_telemetry_request()
-        cls.add_request(request)
+            cls.app_started_event()
