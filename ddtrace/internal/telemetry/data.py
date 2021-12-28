@@ -54,7 +54,7 @@ def _get_os_version():
     _, wver, _, _ = platform.win32_ver()
     _, lver = platform.libc_ver()
 
-    return "" or mver or wver or lver
+    return mver or wver or lver or ""
 
 
 # A dictionary to store application data using ddtrace configurations and the System-Specific module

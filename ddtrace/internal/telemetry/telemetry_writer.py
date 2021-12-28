@@ -50,7 +50,7 @@ class TelemetryWriter(PeriodicService):
         # switch endpoint to agent endpoint
         self.url = endpoint  # type: str
         self.encoder = JSONEncoderV2()
-        self._requests_queue = []  # type: List[TelemetryRequest]
+        self._events_queue = []  # type: List[TelemetryRequest]
         self._integrations_queue = []  # type: List[Dict]
 
     def _send_request(self, request):
@@ -79,27 +79,35 @@ class TelemetryWriter(PeriodicService):
 
     def flush_integrations_queue(self):
         # type () -> List[Dict]
-        """Returns a list of all integrations queued by classmethods"""
+        """Returns a list of all integrations queued by integration_event"""
         with self._lock:
             integrations = self._integrations_queue
             self._integrations_queue = []
         return integrations
 
-    def flush_requests_queue(self):
+    def flush_events_queue(self):
         # type () -> List[TelemetryRequest]
         """Returns a list of all integrations queued by classmethods"""
         with self._lock:
-            requests = self._requests_queue
-            self._requests_queue = []
+            requests = self._events_queue
+            self._events_queue = []
         return requests
+
+    def queued_events(self):
+        # type () -> List[TelemetryRequest]
+        return self._events_queue
+
+    def queued_integrations(self):
+        # type () -> List[Dict]
+        return self._integrations_queue
 
     def periodic(self):
         integrations = self.flush_integrations_queue()
         if integrations:
             integrations_request = app_integrations_changed_telemetry_request(integrations)
-            TelemetryWriter.add_request(integrations_request)
+            TelemetryWriter.add_event(integrations_request)
 
-        requests = self.flush_requests_queue()
+        requests = self.flush_events_queue()
         requests_failed = []  # type: List[TelemetryRequest]
         for request in requests:
             resp = self._send_request(request)
@@ -108,16 +116,15 @@ class TelemetryWriter(PeriodicService):
 
         with self._lock:
             # add failed requests back to the requests queue
-            self._requests_queue.extend(requests_failed)
+            self._events_queue.extend(requests_failed)
 
     def shutdown(self):
         # type: () -> None
-        appclosed_request = app_closed_telemetry_request()
-        self.add_request(appclosed_request)
+        self.app_closed_event()
         self.periodic()
 
     @classmethod
-    def add_request(cls, request):
+    def add_event(cls, request):
         # type: (TelemetryRequest) -> None
         """
         Adds a Telemetry Request to the TelemetryWriter request buffer
@@ -130,7 +137,7 @@ class TelemetryWriter(PeriodicService):
             request["body"]["seq_id"] = cls.sequence
             cls.sequence += 1
             # TO DO: replace list with a dead letter queue
-            cls._instance._requests_queue.append(request)
+            cls._instance._events_queue.append(request)
 
     @classmethod
     def integration_event(cls, integration_name):
@@ -153,10 +160,17 @@ class TelemetryWriter(PeriodicService):
         Sent when TelemetryWriter is enabled or forks
         """
         request = app_started_telemetry_request()
-        cls.add_request(request)
+        cls.add_event(request)
+
+    @classmethod
+    def app_closed_event(cls):
+        # type: () -> None
+        appclosed_request = app_closed_telemetry_request()
+        cls.add_event(appclosed_request)
 
     @classmethod
     def _restart(cls):
+        # type: () -> None
         cls.disable()
         cls.enable()
 
@@ -189,4 +203,4 @@ class TelemetryWriter(PeriodicService):
             cls._instance = telemetry_writer
             cls.enabled = True
 
-            cls.app_started_event()
+        cls.app_started_event()

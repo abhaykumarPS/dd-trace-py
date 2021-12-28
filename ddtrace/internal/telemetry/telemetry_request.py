@@ -20,7 +20,7 @@ RequestBody = TypedDict(
         # seq_id (sequence id) should be incremented every time a telemetry request is
         # sent to the agent. This field will be used to monitor dropped payloads and
         # reorder requests on the backend.
-        # The value is set in TelemetryWriter.add_request() to ensure seq_id is monotonically increasing
+        # The value is set in TelemetryWriter.add_event() to ensure seq_id is monotonically increasing
         "seq_id": Optional[int],
         "application": Dict,
         "host": Dict,
