@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - new_test
+
+jobs:
+  publish:
+     runs-on: ubuntu-latest 
+     steps:
+            - uses: actions/checkout@v2
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v1
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v1
+            - name: Login do docker.io
+              if: startsWith(github.ref, 'refs/tags/')
+              run: docker login -u abhay900 -p ${{ secrets.DOCKER_TOKEN }}
+            - name: build-push-image                  
+              id: docker_build 
+              uses: docker/build-push-action@v2
+              with:
+                context: .
+                file: ./Dockerfile.buster
+                platforms: linux/amd64,linux/arm64
+                push: ${{ startsWith(github.ref, 'refs/tags/') }}
+                tags: abhay/dd-trace-py:latest
